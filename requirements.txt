@@ -1,0 +1,5 @@
+gymnasium>=1.0
+gym-pusht==0.1.6
+pymunk<7
+numpy>=1.24
+matplotlib>=3.8
