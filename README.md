@@ -7,26 +7,43 @@ good enough to serve as the terminal cost for an MPC planner.
 ![A trained PPO policy pushing the tee onto the goal pose](pusht_success.gif)
 
 Grey tee is the block, green outline is the goal pose, blue dot is the pusher.
-This episode reaches 0.965 coverage in 53 steps.
+This episode reaches 0.954 coverage in 81 steps.
 
 ## Results
 
 ![Training progress](training_progress.png)
 
-PPO from scratch on state observations, 50M steps:
+PPO from scratch on state observations, 80M steps:
 
 | | start | best |
 |---|---|---|
-| Mean max coverage reward | 0.07 | **0.87** |
-| Success rate (coverage > 0.95) | 0% | **58%** |
+| Mean max coverage reward | 0.07 | **0.936** |
+| Success rate (coverage > 0.95) | 0% | **80%** |
 
 For reference, the published Push-T scores of 0.915 / 0.969 come from
-*imitation learning on human demonstrations*, not from-scratch RL.
+*imitation learning on human demonstrations*, not from-scratch RL. The metrics
+are closely analogous but not a verified identical protocol, so this is best
+read as "comparable coverage by a different route", not as a head-to-head win.
 
-Note the two panels diverge late in training. The evaluation reward is capped
-at 1.0, so once the policy is good, converting a 0.93 episode into a success
-barely moves the mean but is the whole point. **Success rate is the metric to
-judge by**; mean max reward saturates.
+Nine episodes from different initial states, played in lockstep. A tile freezes
+when it finishes: green border reached the goal, grey ran out of steps.
+
+![Nine episodes from different initial states](pusht_grid.gif)
+
+Two things worth reading off these curves:
+
+- **The panels diverge late in training.** The evaluation reward is capped at
+  1.0, so once the policy is good, converting a 0.93 episode into a success
+  barely moves the mean but is the whole point. Success rate is the metric to
+  judge by; mean max reward saturates.
+- **The success-rate swings are mostly threshold noise, not regressions.** The
+  red near-miss band (episodes at 0.90-0.999) mirrors the green curve: at the
+  56M dip to 26% success, the near-miss band jumped to 62%. Those episodes did
+  not get worse, they just sat below the line. Judge the trend, not a point.
+
+Training plateaued in the last ~20M steps, oscillating in a 0.85-0.94 band with
+no further trend, so the run was stopped at 80M. Note the best-mean checkpoint
+(59M) and the best-success checkpoints (65M, 78.5M) are not the same one.
 
 ## What it took to make PPO work
 
@@ -154,8 +171,11 @@ does, which is why the project moved here.
 
 ## Next steps
 
-1. Frame stacking, to make the observation Markov.
-2. Anneal the policy-std floor, trading exploration for final placement
-   precision once the approach behaviour is learned.
+1. Anneal the policy-std floor. At the current floor of 0.12 the action jitter
+   is ~1.6px, while the median positional error at the point of best coverage
+   is ~2.5px - so exploration noise is the same order as the accuracy still
+   needed. Now that the curve has flattened, this is a clean single-variable
+   experiment against a well-characterised baseline.
+2. Frame stacking, to make the observation Markov.
 3. Use the PPO critic as the terminal cost in an MPC planner - the original
    goal of the project.
