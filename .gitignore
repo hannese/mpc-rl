@@ -1,0 +1,13 @@
+.venv312/
+__pycache__/
+*.py[cod]
+
+# Generated run artifacts - none of this belongs in the repo.
+# The replay buffers alone are ~100MB.
+*.npz
+*.zip
+*.pkl
+*_log.txt
+*_envconfig.json
+ppo_checkpoints/
+*.csv
